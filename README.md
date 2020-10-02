@@ -1,2 +1,1 @@
-# sharedoc
-share somethink
+加密
