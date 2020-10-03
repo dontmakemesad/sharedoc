@@ -407,8 +407,8 @@ loadscript('curve25519_concat.js')
             window.encryptv = new user_encrypt_class("");
             window.encryptv.generateUserKeyPair().then((i)=>{
                 // 生成对外公钥组，可以将该公钥组先发给对方
-                console.log(JSON.stringify(i));
-                window.publicKeyPair = JSON.stringify(i);
+                console.log(i);
+                window.publicKeyPair = i;
                 window.document.getElementById('mypwd').value = window.publicKeyPair;
             })
             
@@ -416,21 +416,40 @@ loadscript('curve25519_concat.js')
                 copymykeypair: function() {
                     // 复制我的密钥
                     this.copydata(document.getElementById('mypwd').value)
-                    
-                    document.getElementById("frdpwd").setAttribute("readonly", "true");
-                    document.getElementById("mytext").setAttribute("readonly", "true");
-                    document.getElementById("mysecret").setAttribute("readonly", "true");
+
+                    // document.getElementById("frdpwd").setAttribute("readonly", "true");
+                    // document.getElementById("mytext").setAttribute("readonly", "true");
                 },
                 pastefrdkeypair: function() {
                     // 粘贴朋友的密钥
-                    this.pastedata("frdpwd")
-                },
-                pastemytext: function() {
-                    // 粘贴我的内容
-                    this.pastedata("mytext")
+                    navigator.clipboard.readText().then((text)=>{
+                        window.document.getElementById("frdpwd").value = text;
+                        window.encryptv.get_friend_publickey(text).then((t)=>{
+                            console.log(t)
+                        })
+                    })
                 },
                 encryptmytext: function() {
                     // 加密我的内容
+                    document.getElementById("srcdata").innerHTML = "原文：" + document.getElementById("mytext").value
+                    window.encryptv.encrypt_msg(document.getElementById("mytext").value).then((encrypttext)=>{
+                        console.log(encrypttext)
+                        window.document.getElementById("mytext").value = encrypttext
+                        navigator.clipboard.writeText(encrypttext).then(() => {
+                            console.log('文本已经成功复制到剪切板');
+                        })
+                    })
+                },
+                decryptmytext: function() {
+                    // 解密我的内容
+                    document.getElementById("srcdata").innerHTML = "原文：" + document.getElementById("mytext").value
+                    window.encryptv.decrypt_msg(document.getElementById("mytext").value,(result,msg)=>{
+                        console.log(msg)
+                        window.document.getElementById("mytext").value = msg
+                        navigator.clipboard.writeText(msg).then(() => {
+                            console.log('文本已经成功复制到剪切板');
+                        })
+                    })
                 },
                 copydata: function(text) {
                     return navigator.clipboard.writeText(text)
@@ -442,10 +461,10 @@ loadscript('curve25519_concat.js')
                         console.error('无法复制此文本：', err);
                     });
                 },
-                pastedata: function(where) {
-                    navigator.clipboard.readText()
+                pastedata: function() {
+                    return navigator.clipboard.readText()
                     .then(text => {
-                        document.getElementById(where).value = text;
+                        document.getElementById("mytext").value = text;
                         console.log('Pasted content: ', text);
                     })
                     .catch(err => {
@@ -459,15 +478,15 @@ loadscript('curve25519_concat.js')
 ///////////////////////////////////////////////////////////////
 
 </script>
-    我的密钥(keyPair):<input type="text" id="mypwd" name="mypwd" size="50" readonly placeholder="请稍后，密钥正在加载中........">
+    我的编号(keyPair):<input type="text" id="mypwd" name="mypwd" size="50" readonly placeholder="请稍后，密钥正在加载中........">
     <button id="copy_button" onclick="run.copymykeypair()">复制</button><br/>
-    朋友的密钥：<input type="text" id="frdpwd" name="frdpwd" size="50" readonly placeholder="请把你的对方的密钥（keyPair）粘贴在此处">
+    朋友的编号：<input type="text" id="frdpwd" name="frdpwd" size="50" readonly placeholder="请把你的对方的密钥（keyPair）粘贴在此处">
     <button id="paste_button" onclick="run.pastefrdkeypair()">粘贴</button><br/><br/>
-    <textarea id="mytext" name="mytext" rows="4" cols="50" readonly placeholder="这里填上你想说的话。"></textarea><br/>
-    <button id="paste_button" onclick="run.pastedata('mytext')">一键粘贴内容</button><button id="paste_button" onclick="run.pastedata()">一键加密</button>
-    <br/><br/>
-    <textarea id="mysecret" name="mysecret" rows="4" cols="50" placeholder="点击复制，这里的密文可以发给对方" readonly onclick="run.copydata(document.getElementById('mysecret').value)">
-    </textarea>
-    
+    <textarea id="mytext" name="mytext" rows="4" cols="50" placeholder="这里填上你想说的话。"></textarea><br/>
+    <button onclick="run.pastedata()">一键粘贴</button>
+    <button onclick="run.copydata(document.getElementById('mytext').value)">一键复制</button>
+    <button onclick="run.encryptmytext()">加密</button>
+    <button onclick="run.decryptmytext()">解密</button>
+    <p id="srcdata"></p>
 </body>
 </html>

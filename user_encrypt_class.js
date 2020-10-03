@@ -266,13 +266,25 @@ class user_encrypt_class{
         this.friend_IterationCache.items = data.friend_IterationCache;
     }
 
-    get_friend_publickey(friend_publickey){
+    get_friend_publickey(input){
+        var friend_publickey = JSON.parse(util.base64DecodeToStr(input))
         // 获取好友的公钥
         var that = this;
-        that.friend_publickey = friend_publickey;
-        return Promise.resolve(friend_publickey)
-        .then(that.Create_DH_for_encrypt(friend_publickey))
-        .then(that.Create_DH_for_decrypt(friend_publickey))
+        that.friend_publickey = {
+            name:friend_publickey.name,
+            registrationId:friend_publickey.registrationId,
+            Iteration : 0,
+            Einitiator_pub : util.toArrayBuffer(util.base64DecodeToStr(friend_publickey.Einitiator_pub)),
+            Irecipient : util.toArrayBuffer(util.base64DecodeToStr(friend_publickey.Irecipient)),
+            Srecipient : util.toArrayBuffer(util.base64DecodeToStr(friend_publickey.Srecipient)),
+            Orecipient : [util.toArrayBuffer(util.base64DecodeToStr(friend_publickey.Orecipient[0]))]
+        };
+        return Promise.resolve(that.friend_publickey)
+        .then(that.Create_DH_for_encrypt(that.friend_publickey))
+        .then(that.Create_DH_for_decrypt(that.friend_publickey))
+        .then(()=>{
+            return that.friend_publickey;
+        })
     }
 
     generateUserKeyPair() {
@@ -337,7 +349,7 @@ class user_encrypt_class{
         for (let index = 0; index < this.preKeys.length; index++) {
             pubs.push(this.preKeys[index].pubKey);
         }
-        return {
+        return util.strEncodeToBase64(JSON.stringify({
             name:this.name,
             registrationId:this.registrationId,
             Iteration : 0,
@@ -345,7 +357,7 @@ class user_encrypt_class{
             Irecipient : util.strEncodeToBase64(util.toString(this.Identity_Key_Pair.pubKey)),
             Srecipient : util.strEncodeToBase64(util.toString(this.Signed_Pre_Key.keyPair.pubKey)),
             Orecipient : [util.strEncodeToBase64(util.toString(pubs[0]))]
-        }
+        }))
     }
 
     Curve25519_createKeyPair() {
@@ -442,14 +454,15 @@ class user_encrypt_class{
             // 该处要对消息进行签名
             return Internal.crypto.Ed25519Sign(that.Einitiator, result).then(function(sigCalc) {
                 // 签名完成
+                
                 if (typeof cb === "function") {
                     cb({
                         registrationId : that.registrationId,
                         name : that.name,
                         mobile : that.mobile,
                         email : that.email,
-                        sigCalc : sigCalc,
-                        result : result,
+                        sigCalc : util.strEncodeToBase64(util.toString(sigCalc)),
+                        result : util.strEncodeToBase64(util.toString(result)),
                         Iteration : that.encrypt_keys.Iteration
                     })
                 }
@@ -458,8 +471,8 @@ class user_encrypt_class{
                     name : that.name,
                     mobile : that.mobile,
                     email : that.email,
-                    sigCalc : sigCalc,
-                    result : result,
+                    sigCalc : util.strEncodeToBase64(util.toString(sigCalc)),
+                    result : util.strEncodeToBase64(util.toString(result)),
                     Iteration : that.encrypt_keys.Iteration
                 }
             }).then(function (r) {
@@ -480,15 +493,18 @@ class user_encrypt_class{
                         that.encrypt_keys.Iteration++;
                     }
                 )
-                return r
+                return util.strEncodeToBase64(JSON.stringify(r))
             })
         })
 
     }
 
-    decrypt_msg(msg,cb){
+    decrypt_msg(input,cb){
         var that = this;
-
+        
+        var msg = JSON.parse(util.base64DecodeToStr(input));
+        msg.sigCalc = util.toArrayBuffer(util.base64DecodeToStr(msg.sigCalc))
+        msg.result = util.toArrayBuffer(util.base64DecodeToStr(msg.result))
         // 此处对msg先进行签名验证
         Internal.crypto.Ed25519Verify(that.friend_publickey.Einitiator_pub, msg.result, msg.sigCalc).then(function() {
             console.log("签名验证成功");
