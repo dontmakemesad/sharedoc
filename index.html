@@ -10,7 +10,6 @@
 <body>
     <script>
 
-
 ///////////////////////////////////////////////////////////////
     var loadscript = (function(){
         function carry(fn){
@@ -397,6 +396,10 @@ loadscript('curve25519_concat.js')
     (()=>{
         console.log("加载存储接口模块 user_encrypt_class 已完成")
     })
+    ("wordtext.js")
+    (()=>{
+        console.log("加载字库 已完成")
+    })
     ()
     .then(()=>{
         // console.log("模块加载完成，此处可以添加渲染代码!")
@@ -411,7 +414,7 @@ loadscript('curve25519_concat.js')
                 window.publicKeyPair = i;
                 window.document.getElementById('mypwd').value = window.publicKeyPair;
             })
-            
+
             return {
                 copymykeypair: function() {
                     // 复制我的密钥
@@ -430,22 +433,30 @@ loadscript('curve25519_concat.js')
                     })
                 },
                 encryptmytext: function() {
+                    if(document.getElementById("frdpwd").value == ''){
+                        window.document.getElementById("srcdata").innerHTML = "请输入朋友的ID"
+                        return;
+                    }
                     // 加密我的内容
-                    document.getElementById("srcdata").innerHTML = "原文：" + document.getElementById("mytext").value
                     window.encryptv.encrypt_msg(document.getElementById("mytext").value).then((encrypttext)=>{
                         console.log(encrypttext)
-                        window.document.getElementById("mytext").value = encrypttext
-                        navigator.clipboard.writeText(encrypttext).then(() => {
+                        let cnword = window.run.toCNword(encrypttext)
+                        window.document.getElementById("srcdata").innerHTML = "密文已经成功复制到你的粘贴板<br/><br/>"+ '密文：' + cnword;
+
+                        navigator.clipboard.writeText(cnword).then(() => {
                             console.log('文本已经成功复制到剪切板');
                         })
                     })
                 },
                 decryptmytext: function() {
+                    if(document.getElementById("frdpwd").value == ''){
+                        window.document.getElementById("srcdata").innerHTML = "请输入朋友的ID"
+                        return;
+                    }
                     // 解密我的内容
-                    document.getElementById("srcdata").innerHTML = "原文：" + document.getElementById("mytext").value
-                    window.encryptv.decrypt_msg(document.getElementById("mytext").value,(result,msg)=>{
+                    window.encryptv.decrypt_msg(window.run.toStr(document.getElementById("mytext").value),(result,msg)=>{
                         console.log(msg)
-                        window.document.getElementById("mytext").value = msg
+                        window.document.getElementById("srcdata").innerHTML = "原文已经成功复制到你的粘贴板<br/><br/>" + '原文：' + msg;
                         navigator.clipboard.writeText(msg).then(() => {
                             console.log('文本已经成功复制到剪切板');
                         })
@@ -470,6 +481,28 @@ loadscript('curve25519_concat.js')
                     .catch(err => {
                         console.error('Failed to read clipboard contents: ', err);
                     });
+                },
+                toCNword: function(str){
+                    let buff = []
+                    let strtoArrayBuffer = new Uint8Array(util.toArrayBuffer(str));
+                    for (const strtoArrayBufferElement of strtoArrayBuffer) {
+                        buff.push(word.cn[strtoArrayBufferElement])
+                    }
+                    return buff.join('');
+                },
+                toStr: function(CNword){
+                    let buff = [...CNword];
+                    let newArrayBuffer = new ArrayBuffer(CNword.length);
+                    let edit = new Uint8Array(newArrayBuffer);
+                    
+                    let count = 0;
+                    for(const temp of CNword){
+                        if (count == CNword.length) {break;}
+                        edit[count] = word.cn.indexOf(temp);
+                        count++;
+                    }
+                    console.log()
+                    return util.toString(newArrayBuffer);
                 }
             };
         })();
@@ -478,10 +511,14 @@ loadscript('curve25519_concat.js')
 ///////////////////////////////////////////////////////////////
 
 </script>
-    我的编号(keyPair):<input type="text" id="mypwd" name="mypwd" size="50" readonly placeholder="请稍后，密钥正在加载中........">
+    <h2>Miles007&nbsp;&nbsp;beta version: 20201004</h2>
+    我的id:&nbsp;<input type="text" id="mypwd" name="mypwd" size="50" readonly placeholder="请稍后，正在生成你的ID中........">
     <button id="copy_button" onclick="run.copymykeypair()">复制</button><br/>
-    朋友的编号：<input type="text" id="frdpwd" name="frdpwd" size="50" readonly placeholder="请把你的对方的密钥（keyPair）粘贴在此处">
+    朋友的id：&nbsp;<input type="text" id="frdpwd" name="frdpwd" size="50" readonly placeholder="请把朋友的ID粘贴在此处">
     <button id="paste_button" onclick="run.pastefrdkeypair()">粘贴</button><br/><br/>
+
+    <p>注意，只有持有相应ID的朋友才能够解开信息，如果ID丢失或者更换ID，那么信息将永远无法解开。</p>
+
     <textarea id="mytext" name="mytext" rows="4" cols="50" placeholder="这里填上你想说的话。"></textarea><br/>
     <button onclick="run.pastedata()">一键粘贴</button>
     <button onclick="run.copydata(document.getElementById('mytext').value)">一键复制</button>

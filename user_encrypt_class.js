@@ -493,7 +493,8 @@ class user_encrypt_class{
                         that.encrypt_keys.Iteration++;
                     }
                 )
-                return util.strEncodeToBase64(JSON.stringify(r))
+                // return util.strEncodeToBase64(JSON.stringify(r))
+                return (JSON.stringify(r))
             })
         })
 
@@ -502,7 +503,7 @@ class user_encrypt_class{
     decrypt_msg(input,cb){
         var that = this;
         
-        var msg = JSON.parse(util.base64DecodeToStr(input));
+        var msg = JSON.parse((input));
         msg.sigCalc = util.toArrayBuffer(util.base64DecodeToStr(msg.sigCalc))
         msg.result = util.toArrayBuffer(util.base64DecodeToStr(msg.result))
         // 此处对msg先进行签名验证
