@@ -457,20 +457,20 @@ class user_encrypt_class{
                 
                 if (typeof cb === "function") {
                     cb({
-                        registrationId : that.registrationId,
-                        name : that.name,
-                        mobile : that.mobile,
-                        email : that.email,
+                        // registrationId : that.registrationId,
+                        // name : that.name,
+                        // mobile : that.mobile,
+                        // email : that.email,
                         sigCalc : util.strEncodeToBase64(util.toString(sigCalc)),
                         result : util.strEncodeToBase64(util.toString(result)),
                         Iteration : that.encrypt_keys.Iteration
                     })
                 }
                 return {
-                    registrationId : that.registrationId,
-                    name : that.name,
-                    mobile : that.mobile,
-                    email : that.email,
+                    // registrationId : that.registrationId,
+                    // name : that.name,
+                    // mobile : that.mobile,
+                    // email : that.email,
                     sigCalc : util.strEncodeToBase64(util.toString(sigCalc)),
                     result : util.strEncodeToBase64(util.toString(result)),
                     Iteration : that.encrypt_keys.Iteration

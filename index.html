@@ -407,7 +407,7 @@ loadscript('curve25519_concat.js')
             'use strict';
             var that = this;
             window.publicKeyPair;
-            window.encryptv = new user_encrypt_class("");
+            window.encryptv = new user_encrypt_class("null");
             window.encryptv.generateUserKeyPair().then((i)=>{
                 // 生成对外公钥组，可以将该公钥组先发给对方
                 console.log(i);
