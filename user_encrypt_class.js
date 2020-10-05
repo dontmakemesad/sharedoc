@@ -471,8 +471,8 @@ class user_encrypt_class{
                     // name : that.name,
                     // mobile : that.mobile,
                     // email : that.email,
-                    sigCalc : util.strEncodeToBase64(util.toString(sigCalc)),
-                    result : util.strEncodeToBase64(util.toString(result)),
+                    sigCalc : util.toString(sigCalc),
+                    result : util.toString(result),
                     Iteration : that.encrypt_keys.Iteration
                 }
             }).then(function (r) {
@@ -504,8 +504,8 @@ class user_encrypt_class{
         var that = this;
         
         var msg = JSON.parse((input));
-        msg.sigCalc = util.toArrayBuffer(util.base64DecodeToStr(msg.sigCalc))
-        msg.result = util.toArrayBuffer(util.base64DecodeToStr(msg.result))
+        msg.sigCalc = util.toArrayBuffer(msg.sigCalc)
+        msg.result = util.toArrayBuffer(msg.result)
         // 此处对msg先进行签名验证
         Internal.crypto.Ed25519Verify(that.friend_publickey.Einitiator_pub, msg.result, msg.sigCalc).then(function() {
             console.log("签名验证成功");
