@@ -410,7 +410,7 @@ loadscript('curve25519_concat.js')
             window.encryptv = new user_encrypt_class("null");
             window.encryptv.generateUserKeyPair().then((i)=>{
                 // 生成对外公钥组，可以将该公钥组先发给对方
-                console.log(i);
+                // console.log(i);
                 window.publicKeyPair = i;
                 window.document.getElementById('mypwd').value = window.publicKeyPair;
             })
@@ -439,7 +439,7 @@ loadscript('curve25519_concat.js')
                     }
                     // 加密我的内容
                     window.encryptv.encrypt_msg(document.getElementById("mytext").value).then((encrypttext)=>{
-                        console.log(encrypttext)
+                        // console.log(encrypttext)
                         let cnword = window.run.toCNword(encrypttext)
                         window.document.getElementById("srcdata").innerHTML = "密文已经成功复制到你的粘贴板<br/><br/>"+ '密文：' + cnword;
 
@@ -455,7 +455,7 @@ loadscript('curve25519_concat.js')
                     }
                     // 解密我的内容
                     window.encryptv.decrypt_msg(window.run.toStr(document.getElementById("mytext").value),(result,msg)=>{
-                        console.log(msg)
+                        // console.log(msg)
                         window.document.getElementById("srcdata").innerHTML = "原文已经成功复制到你的粘贴板<br/><br/>" + '原文：' + msg;
                         navigator.clipboard.writeText(msg).then(() => {
                             console.log('文本已经成功复制到剪切板');
@@ -501,7 +501,6 @@ loadscript('curve25519_concat.js')
                         edit[count] = word.cn.indexOf(temp);
                         count++;
                     }
-                    console.log()
                     return util.toString(newArrayBuffer);
                 }
             };
